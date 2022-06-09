@@ -3,7 +3,7 @@ const mf = require('mineflayer')
 const { queueSpeed } = require('../../index')
 
 const bot = mf.createBot({
-  username: 'printer_go_brrr_mc@outlook.com',
+  username: process.env.MINECRAFT_USERNAME,
   version: '1.12.2',
   host: '2b2t.org',
   auth: 'microsoft',

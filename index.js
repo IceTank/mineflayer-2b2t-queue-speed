@@ -47,17 +47,16 @@ function inject(bot, options = {}) {
                 time: Date.now(),
                 position: pos
               })
-              bot.emit('queueSpeed:position', pos)
             }
           } else if (!bot.queueSpeed.sawQueuePosition) {
             bot.queueSpeed.sawQueuePosition = true
             bot.queueSpeed.startTime = new Date()
             console.info('[Queue speed] Detected queue. Starting to record queue speed')
-            bot.emit('queueSpeed:position', pos)
           }
           if (bot.queueSpeed.currentPosition !== pos) {
             bot.queueSpeed.lastPosition = bot.queueSpeed.currentPosition
             bot.queueSpeed.currentPosition = pos
+            bot.emit('queueSpeed:position', pos)
           }
         } 
       } catch (err) {

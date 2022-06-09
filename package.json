@@ -1,0 +1,16 @@
+{
+  "name": "mineflayer-2b2t-queue-speed",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "mineflayer": "^4.3.0",
+    "mineflayer-2b2t-queue-speed": "file.:"
+  }
+}

@@ -55,8 +55,10 @@ function inject(bot, options = {}) {
             console.info('[Queue speed] Detected queue. Starting to record queue speed')
             bot.emit('queueSpeed:position', pos)
           }
-          bot.queueSpeed.lastPosition = bot.queueSpeed.currentPosition
-          bot.queueSpeed.currentPosition = pos
+          if (bot.queueSpeed.currentPosition !== pos) {
+            bot.queueSpeed.lastPosition = bot.queueSpeed.currentPosition
+            bot.queueSpeed.currentPosition = pos
+          }
         } 
       } catch (err) {
         

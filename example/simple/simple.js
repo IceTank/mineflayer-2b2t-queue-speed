@@ -21,3 +21,9 @@ bot.on('error', console.error)
 bot.on('queueSpeed:position', (pos) => {
   console.info(`Position in queue: ${pos}`)
 })
+bot.on('queueSpeed:queueEnd', () => {
+  setTimeout(() => {
+    console.info('Exiting')
+    bot.end()
+  }, 10000)
+})

@@ -21,5 +21,6 @@ declare module 'mineflayer' {
 
   interface BotEvents {
     'queueSpeed:position': (position: number) => void
+    'queueSpeed:queueEnd': () => void
   }
 }

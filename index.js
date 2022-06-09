@@ -25,6 +25,7 @@ function inject(bot, options = {}) {
       try {
         if (string.startsWith('Connecting to the server...')) {
           summarize()
+          bot.emit('queueSpeed:queueEnd')
           bot.queueSpeed.endTime = new Date()
         } else if (string.startsWith('You can purchase priority queue')) {
           return
@@ -71,9 +72,7 @@ function inject(bot, options = {}) {
     for (const entry of bot.queueSpeed.positionHistory) {
       str += `${entry.time},${entry.position}\n`
     }
-    fs.writeFile(path.join(bot.queueSpeed.outFolder, `${now}.csv`), str, 'utf-8', (err) => {
-      if (err) console.error(err)
-    })
+    return fs.promises.writeFile(path.join(bot.queueSpeed.outFolder, `${now}.csv`), str, 'utf-8')
   }
 
   function millisecondsToStringTime(mili) {
@@ -82,19 +81,21 @@ function inject(bot, options = {}) {
   }
 
   function summarize() {
-    writeQueueHistoryToFile()
-    const startingPosition = bot.queueSpeed.positionHistory[0]
-    const queueStartTime = startingPosition.time
-    const now = new Date()
-    const timeDelta = now.getTime() - startingPosition.time
-    console.info(`[Qeueue speed Summary]
+    writeQueueHistoryToFile().then(() => {
+      const startingPosition = bot.queueSpeed.positionHistory[0]
+      const queueStartTime = startingPosition.time
+      const now = new Date()
+      const timeDelta = now.getTime() - startingPosition.time
+      console.info(`[Qeueue speed Summary]
 Started recording at: ${queueStartTime}
 Starting position: ${startingPosition.pos} at ${startingPosition.time}
 End time: ${now}
 Total time: ${millisecondsToStringTime(timeDelta)}
 Average positions per minute: ${bot.queueSpeed.positionHistory.length / (timeDelta / 1000 / 60)}
 Average minutes per position: ${(timeDelta / 1000 / 60) / bot.queueSpeed.positionHistory.length}
-    `)
+      `)
+    })
+    .catch(console.error)
   }
 }
 

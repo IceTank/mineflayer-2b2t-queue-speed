@@ -11,7 +11,7 @@ const bot = mf.createBot({
 })
 
 bot.loadPlugin(queueSpeed)
-bot.on('login', () => {
+bot.once('login', () => {
   console.info('Login as ' + bot.username)
 })
 bot.on('kicked', (reason) => {

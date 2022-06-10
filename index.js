@@ -14,8 +14,13 @@ function inject(bot, options = {}) {
   bot.queueSpeed.positionHistory = []
   bot.queueSpeed.outFolder = './queue-speed'
   bot.queueSpeed.sawQueuePosition = false
-  bot.on('login', () => {
+  bot.once('login', () => {
     bot.queueSpeed.sawQueuePosition = false
+    bot.once('login', () => {
+      bot.emit('queueSpeed:queueEnd')
+      summarize()
+      bot.queueSpeed.endTime = new Date()
+    })
   })
   bot.on('message', (chatMessage) => {
     const chatString = chatMessage.toString()

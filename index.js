@@ -71,13 +71,15 @@ function inject(bot, options = {}) {
     }
   })
 
-  function writeQueueHistoryToFile() {
+  async function writeQueueHistoryToFile() {
     const now = Date.now()
     let str = ''
     for (const entry of bot.queueSpeed.positionHistory) {
       str += `${entry.time},${entry.position}\n`
     }
-    return fs.promises.writeFile(path.join(bot.queueSpeed.outFolder, `${now}.csv`), str, 'utf-8')
+    await fs.promises.mkdir(bot.queueSpeed.outFolder, { recursive: true })
+    await fs.promises.writeFile(path.join(bot.queueSpeed.outFolder, `${now}.csv`), str, 'utf-8')
+    return
   }
 
   function millisecondsToStringTime(mili) {

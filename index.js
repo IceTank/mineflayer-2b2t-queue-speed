@@ -98,8 +98,8 @@ Started recording at: ${queueStartTime}
 Starting position: ${startingPosition.position}
 End time: ${now}
 Total time: ${millisecondsToStringTime(timeDelta)}
-Average positions per minute: ${bot.queueSpeed.positionHistory.length / (timeDelta / 1000 / 60)}
-Average minutes per position: ${(timeDelta / 1000 / 60) / bot.queueSpeed.positionHistory.length}
+Average positions per minute: ${startingPosition.pos / (timeDelta / 1000 / 60)}
+Average minutes per position: ${(timeDelta / 1000 / 60) / startingPosition.pos}
       `)
     })
     .catch(console.error)

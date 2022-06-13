@@ -50,7 +50,7 @@ function inject(bot, options = {}) {
             } else if (bot.queueSpeed.lastPosition > pos) {
               // We are moving forwards in the queue
               bot.queueSpeed.positionHistory.push({
-                time: Date.now(),
+                time: new Date(),
                 position: pos
               })
             }
@@ -75,7 +75,7 @@ function inject(bot, options = {}) {
     const now = Date.now()
     let str = ''
     for (const entry of bot.queueSpeed.positionHistory) {
-      str += `${entry.time},${entry.position}\n`
+      str += `${entry.time.getTime()},${entry.position}\n`
     }
     await fs.promises.mkdir(bot.queueSpeed.outFolder, { recursive: true })
     await fs.promises.writeFile(path.join(bot.queueSpeed.outFolder, `${now}.csv`), str, 'utf-8')
@@ -92,10 +92,10 @@ function inject(bot, options = {}) {
       const startingPosition = bot.queueSpeed.positionHistory[0]
       const queueStartTime = startingPosition.time
       const now = new Date()
-      const timeDelta = now.getTime() - startingPosition.time
+      const timeDelta = now.getTime() - startingPosition.time.getTime()
       console.info(`[Qeueue speed Summary]
 Started recording at: ${queueStartTime}
-Starting position: ${startingPosition.pos} at ${startingPosition.time}
+Starting position: ${startingPosition.position}
 End time: ${now}
 Total time: ${millisecondsToStringTime(timeDelta)}
 Average positions per minute: ${bot.queueSpeed.positionHistory.length / (timeDelta / 1000 / 60)}

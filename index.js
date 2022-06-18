@@ -156,8 +156,8 @@ Started recording at: ${queueStartTime}
 Starting position: ${startingPosition.position}
 End time: ${now}
 Total time: ${millisecondsToStringTime(timeDelta)}
-Average positions per minute: ${startingPosition.position / (timeDelta / 1000 / 60)}
-Average minutes per position: ${(timeDelta / 1000 / 60) / startingPosition.position}`)
+Average positions per minute: ${startingPosition.position / (timeDelta / 1000 / 60)} (${startingPosition.position / (timeDelta / 1000)} [per seconds])
+Average minutes per position: ${(timeDelta / 1000 / 60) / startingPosition.position} (${(timeDelta / 1000) / startingPosition.position} [seconds per position])`)
   }
 }
 

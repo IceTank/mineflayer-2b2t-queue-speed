@@ -3,6 +3,11 @@ const path = require('path')
 
 const { ping } = require('minecraft-protocol')
 
+const { promisify } = require('node:util')
+const { deflate } = require('zlib')
+const deflatePromise = promisify(deflate)
+const { request } = require('http')
+
 let lastQueueLookup = new Date()
 let lastQueueLength = null
 
@@ -49,11 +54,47 @@ async function getQueueLengths() {
   return parseQueueLength(r)
 }
 
+async function postQueueData(buffer) {
+  const url = 'someUrl'
+
+  const options = {
+    hostname: url,
+    path: '/',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/zlib',
+      'Content-Length': Buffer.byteLength(buffer)
+    }
+  }
+
+  await new Promise((resolve, reject) => {
+    const req = request(options, (res) => {
+      console.log(`STATUS: ${res.statusCode}`)
+      console.log(`HEADERS: ${JSON.stringify(res.headers)}`)
+      res.setEncoding('utf8')
+      res.on('data', (chunk) => {
+        // console.log(`BODY: ${chunk}`);
+      })
+      res.once('end', () => resolve())
+    })
+    
+    req.on('error', (e) => {
+      console.error(`problem with request: ${e.message}`);
+      reject(e)
+    });
+    
+    // Write data to request body
+    req.write(buffer)
+    req.end()
+  })
+}
+
 /**
  * 
  * @param {import('mineflayer').Bot} bot 
  */
 function inject(bot, options = {}) {
+  let sendQueueData = options.sendQueueData ?? false
   bot.queueSpeed = {}
   bot.queueSpeed.startTime = null
   bot.queueSpeed.endTime = null
@@ -135,6 +176,14 @@ function inject(bot, options = {}) {
     }
     await fs.promises.mkdir(bot.queueSpeed.outFolder, { recursive: true })
     await fs.promises.writeFile(path.join(bot.queueSpeed.outFolder, `${now}.csv`), str, 'utf-8')
+    if (sendQueueData) {
+      try {
+        const compressed = await deflatePromise(str)
+        await postQueueData(compressed)
+      } catch (err) {
+        console.error('Posting queue data failed', err)
+      }
+    }
     return
   }
 

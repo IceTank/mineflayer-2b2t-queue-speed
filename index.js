@@ -35,7 +35,7 @@ async function getQueueLengths() {
     return lastQueueLength
   }
 
-  console.info('Queue length lookup')
+  // console.info('Queue length lookup')
   lastQueueLength = null
   const r = await ping({
     host: 'connect.2b2t.org',

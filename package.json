@@ -11,6 +11,6 @@
   "license": "ISC",
   "devDependencies": {
     "mineflayer": "^4.3.0",
-    "mineflayer-2b2t-queue-speed": "file.:"
+    "mineflayer-2b2t-queue-speed": "file:."
   }
 }

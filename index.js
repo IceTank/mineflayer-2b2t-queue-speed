@@ -86,6 +86,7 @@ function inject(bot, options = {}) {
         } else if (string.startsWith('Position in queue')) {
           const pos = parseMessageToPosition(string)
           if (pos === null) return
+          bot.queueSpeed.lastPosition = bot.queueSpeed.currentPosition
           if (bot.queueSpeed.lastPosition) {
             if (bot.queueSpeed.lastPosition < pos) {
               // We are moving backwoods in the queue (? why hause why???)
@@ -98,6 +99,7 @@ function inject(bot, options = {}) {
               }
             } else if (bot.queueSpeed.lastPosition > pos) {
               // We are moving forwards in the queue
+              // console.info('Getting queue length', bot.queueSpeed.lastPosition, pos)
               const now = new Date()
               getQueueLengths().then(queueLengths => {
                 bot.queueSpeed.positionHistory.push({
@@ -113,7 +115,7 @@ function inject(bot, options = {}) {
             bot.queueSpeed.startTime = new Date()
             console.info('[Queue speed] Detected queue. Starting to record queue speed')
           }
-          bot.queueSpeed.lastPosition = bot.queueSpeed.currentPosition
+          // console.info('Last position', bot.queueSpeed.lastPosition, pos)
           if (bot.queueSpeed.currentPosition !== pos) {
             bot.queueSpeed.currentPosition = pos
             bot.emit('queueSpeed:position', pos)

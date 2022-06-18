@@ -1,6 +1,54 @@
 const fs = require('fs')
 const path = require('path')
 
+const { ping } = require('minecraft-protocol')
+
+let lastQueueLookup = new Date()
+let lastQueueLength = null
+
+/**
+ * @return { Promise<{ main: { normal: number, priority: number }, test: { normal: number, priority: number } } | null> }
+ */
+async function getQueueLengths() {
+  function parseQueueLength(motd) {
+    /** @type { { 'main': { normal: number, priority: number }, 'test': { normal: number, priority: number } } } */
+    const returnValue = {}
+    for (const server of motd?.players?.sample ?? []) {
+      const serverName = server.name.split(':')[0].replace(/§./g, '')
+      const matches = server.name.match(/normal: (\d+), priority: (\d+)/)
+      if (!matches) throw new Error('Could not parse queue length')
+      const normal = parseInt(matches[1])
+      const priority = parseInt(matches[2])
+      if (isNaN(normal) || isNaN(priority)) throw new Error('Could not parse queue length got ' + server.name)
+      if (!['main', 'test'].includes(serverName)) throw new Error('Invalid server name ' + serverName)
+      // @ts-ignore
+      returnValue[serverName] = {
+        normal,
+        priority
+      }
+    }
+    return returnValue
+  }
+
+  const now = new Date()
+  if (lastQueueLength && now.getTime() - lastQueueLookup.getTime() < 2000) {
+    return lastQueueLength
+  }
+
+  console.info('Queue length lookup')
+  lastQueueLength = null
+  const r = await ping({
+    host: 'connect.2b2t.org',
+    version: '1.12.2'
+  })
+  if (!r.players) {
+    return null
+  }
+  lastQueueLength = r
+  lastQueueLookup = new Date()
+  return parseQueueLength(r)
+}
+
 /**
  * 
  * @param {import('mineflayer').Bot} bot 
@@ -11,6 +59,7 @@ function inject(bot, options = {}) {
   bot.queueSpeed.endTime = null
   bot.queueSpeed.currentPosition = null
   bot.queueSpeed.lastPosition = null
+  /** @type { {time: Date, position: number, currentQueueLength: number}[] } */
   bot.queueSpeed.positionHistory = []
   bot.queueSpeed.outFolder = './queue-speed'
   bot.queueSpeed.sawQueuePosition = false
@@ -49,18 +98,23 @@ function inject(bot, options = {}) {
               }
             } else if (bot.queueSpeed.lastPosition > pos) {
               // We are moving forwards in the queue
-              bot.queueSpeed.positionHistory.push({
-                time: new Date(),
-                position: pos
+              const now = new Date()
+              getQueueLengths().then(queueLengths => {
+                bot.queueSpeed.positionHistory.push({
+                  time: now,
+                  position: pos,
+                  currentQueueLength: queueLengths?.main?.normal ?? 0,
+                })
               })
+              .catch(console.error)
             }
           } else if (!bot.queueSpeed.sawQueuePosition) {
             bot.queueSpeed.sawQueuePosition = true
             bot.queueSpeed.startTime = new Date()
             console.info('[Queue speed] Detected queue. Starting to record queue speed')
           }
+          bot.queueSpeed.lastPosition = bot.queueSpeed.currentPosition
           if (bot.queueSpeed.currentPosition !== pos) {
-            bot.queueSpeed.lastPosition = bot.queueSpeed.currentPosition
             bot.queueSpeed.currentPosition = pos
             bot.emit('queueSpeed:position', pos)
           }
@@ -73,9 +127,9 @@ function inject(bot, options = {}) {
 
   async function writeQueueHistoryToFile() {
     const now = Date.now()
-    let str = ''
+    let str = 'time,position,currentQueueLength\n'
     for (const entry of bot.queueSpeed.positionHistory) {
-      str += `${entry.time.getTime()},${entry.position}\n`
+      str += `${entry.time.getTime()},${entry.position},${entry.currentQueueLength}\n`
     }
     await fs.promises.mkdir(bot.queueSpeed.outFolder, { recursive: true })
     await fs.promises.writeFile(path.join(bot.queueSpeed.outFolder, `${now}.csv`), str, 'utf-8')
@@ -87,22 +141,24 @@ function inject(bot, options = {}) {
     return `${date.getDate() - 1}d ${date.getHours() - 1}h ${date.getMinutes()}min ${date.getSeconds()}sec`
   }
 
-  function summarize() {
-    writeQueueHistoryToFile().then(() => {
-      const startingPosition = bot.queueSpeed.positionHistory[0]
-      const queueStartTime = startingPosition.time
-      const now = new Date()
-      const timeDelta = now.getTime() - startingPosition.time.getTime()
-      console.info(`[Qeueue speed Summary]
+  async function summarize() {
+    await writeQueueHistoryToFile()
+    const startingPosition = bot.queueSpeed.positionHistory[0]
+    if (!startingPosition) {
+      console.info('[Queue speed] No starting position')
+      return
+    }
+    const queueStartTime = startingPosition.time
+    const now = new Date()
+    const timeDelta = now.getTime() - startingPosition.time.getTime()
+    console.info(`[Qeueue speed Summary]
 Started recording at: ${queueStartTime}
 Starting position: ${startingPosition.position}
 End time: ${now}
 Total time: ${millisecondsToStringTime(timeDelta)}
 Average positions per minute: ${startingPosition.pos / (timeDelta / 1000 / 60)}
 Average minutes per position: ${(timeDelta / 1000 / 60) / startingPosition.pos}
-      `)
-    })
-    .catch(console.error)
+    `)
   }
 }
 
@@ -124,4 +180,4 @@ function parseMessageToPosition(message) {
   return num
 }
 
-module.exports = { queueSpeed: inject }
+module.exports = inject

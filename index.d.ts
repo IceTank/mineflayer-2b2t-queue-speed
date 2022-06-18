@@ -5,13 +5,13 @@ interface QueueSpeed {
   endTime: Date | null
   currentPosition: number | null
   lastPosition: number | null
-  positionHistory: Array<{time: Date, pos: number}>
+  positionHistory: Array<{time: Date, position: number, currentQueueLength: number}>
   outFolder: string
   sawQueuePosition: boolean
 }
 
 declare module 'mineflayer-2b2t-queue-speed' {
-  export function queueSpeed(bot: Bot): void;
+  export default function queueSpeed(bot: Bot): void;
 }
 
 declare module 'mineflayer' {

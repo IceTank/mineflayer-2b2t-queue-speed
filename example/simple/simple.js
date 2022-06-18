@@ -1,6 +1,6 @@
 const mf = require('mineflayer')
 
-const { queueSpeed } = require('../../index')
+const queueSpeed = require('../../index')
 
 const bot = mf.createBot({
   username: process.env.MINECRAFT_USERNAME,

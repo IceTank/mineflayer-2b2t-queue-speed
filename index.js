@@ -6,7 +6,10 @@ const { ping } = require('minecraft-protocol')
 const { promisify } = require('node:util')
 const { deflate } = require('zlib')
 const deflatePromise = promisify(deflate)
-const { request } = require('http')
+const { request } = require('https')
+
+const dotenv = require('dotenv')
+dotenv.config()
 
 let lastQueueLookup = new Date()
 let lastQueueLength = null
@@ -55,14 +58,21 @@ async function getQueueLengths() {
 }
 
 async function postQueueData(buffer) {
-  const url = 'someUrl'
+  const url = '2b2q.next-gen.dev'
+  const token = process.env.NEXTGEN_TOKEN
+  if (!token) throw new Error('No token provided')
 
+  const path = '/?token=' + token
+
+  /** @type {import('http').RequestOptions} */
   const options = {
     hostname: url,
-    path: '/',
+    port: 8000,
+    path,
     method: 'POST',
+    rejectUnauthorized: false,
     headers: {
-      'Content-Type': 'application/zlib',
+      'Content-Type': 'application/text',
       'Content-Length': Buffer.byteLength(buffer)
     }
   }
@@ -94,7 +104,10 @@ async function postQueueData(buffer) {
  * @param {import('mineflayer').Bot} bot 
  */
 function inject(bot, options = {}) {
-  let sendQueueData = options.sendQueueData ?? false
+  let sendQueueData = process.env.SENDQUEUEDATA === 'true' || false
+  if (sendQueueData) {
+    console.info('[Queue speed] Sending queue data is on')
+  }
   bot.queueSpeed = {}
   bot.queueSpeed.startTime = null
   bot.queueSpeed.endTime = null
@@ -178,8 +191,10 @@ function inject(bot, options = {}) {
     await fs.promises.writeFile(path.join(bot.queueSpeed.outFolder, `${now}.csv`), str, 'utf-8')
     if (sendQueueData) {
       try {
-        const compressed = await deflatePromise(str)
-        await postQueueData(compressed)
+        // const compressed = await deflatePromise(str)
+        const buffer = Buffer.from(str)
+        await postQueueData(buffer)
+        console.info('Uploaded queue data')
       } catch (err) {
         console.error('Posting queue data failed', err)
       }

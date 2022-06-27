@@ -3,8 +3,9 @@ Auto logs 2b2t queue speed.
 ## Getting started
 1. Git clone this repo
 2. Run `yarn` or `npm i`
-3. Run `yarn run standalone` or `npm run standalone` to start
-4. Follow the login steps in the console for logging in with microsoft accounts.
+3. Set the `MINECRAFT_USERNAME` environment variable to the account email you want to use.
+4. Run `yarn run standalone` or `npm run standalone` to start
+5. Follow the login steps in the console for logging in with microsoft accounts.
 
 ## Mojang accounts
 1. Set the environment variable MINECRAFT_USERNAME and MOJANG_PASSWORD. The program assumes a account is mojang when MOJANG_PASSWORD is given.

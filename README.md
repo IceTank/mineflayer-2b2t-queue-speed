@@ -1,13 +1,17 @@
 Auto logs 2b2t queue speed. 
 
-## Install 
+## Getting started
 1. Git clone this repo
 2. Run `yarn` or `npm i`
 3. Run `yarn run standalone` or `npm run standalone` to start
-4. Follow the login steps in the console
+4. Follow the login steps in the console for logging in with microsoft accounts.
+
+## Mojang accounts
+1. Set the environment variable MINECRAFT_USERNAME and MOJANG_PASSWORD. The program assumes a account is mojang when MOJANG_PASSWORD is given.
+2. Start the program like described in Getting started
 
 ## Environment vars
-- `DATA_PREFIX` Prefix the csv and send data by a string. For instance `# Send by Ic3Tank`
+- `DATA_PREFIX` Prefix the csv file and send data by a string. For instance `# Send by Ic3Tank`. Only really usefull if you are sending the data to next-gen.dev
 - `NEXTGEN_TOKEN` Token needed to upload to `2b2q.next-gen.dev`
 - `SENDQUEUEDATA` Send queue data to next-get.dev or not. `true` for yes. Defaults to false.
 - `MINECRAFT_USERNAME` Microsoft/Mojang email. 

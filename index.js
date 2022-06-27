@@ -183,7 +183,8 @@ function inject(bot, options = {}) {
 
   async function writeQueueHistoryToFile() {
     const now = Date.now()
-    let str = 'time,position,currentQueueLength\n'
+    const dataPrefix = `${process.env.DATA_PREFIX}\n` ?? '\n'
+    let str = `${dataPrefix}time,position,currentQueueLength\n`
     for (const entry of bot.queueSpeed.positionHistory) {
       str += `${entry.time.getTime()},${entry.position},${entry.currentQueueLength}\n`
     }

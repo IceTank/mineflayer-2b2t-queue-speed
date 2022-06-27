@@ -2,11 +2,14 @@ const mf = require('mineflayer')
 
 const queueSpeed = require('../../index')
 
+const isMojang = !!process.env.MOJANG_PASSWORD
+
 const bot = mf.createBot({
   username: process.env.MINECRAFT_USERNAME,
+  password: isMojang ? process.env.MOJANG_PASSWORD : undefined,
   version: '1.12.2',
   host: '2b2t.org',
-  auth: 'microsoft',
+  auth: isMojang ? 'mojang' : 'microsoft',
   profilesFolder: './nmp-cache'
 })
 
